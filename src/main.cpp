@@ -46,8 +46,9 @@ int main() {
 
   // Create particle filter
   ParticleFilter pf;
+  unsigned int counter = 0;
 
-  h.onMessage([&pf,&map,&delta_t,&sensor_range,&sigma_pos,&sigma_landmark]
+  h.onMessage([&pf,&map,&delta_t,&sensor_range,&sigma_pos,&sigma_landmark, &counter]
               (uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, 
                uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
@@ -78,6 +79,9 @@ int main() {
 
             pf.prediction(delta_t, sigma_pos, previous_velocity, previous_yawrate);
           }
+
+          counter++;
+          // std::cout << "counter: " << counter << std::endl;
 
           // receive noisy observation data from the simulator
           // sense_observations in JSON format 
@@ -127,8 +131,8 @@ int main() {
             weight_sum += particles[i].weight;
           }
 
-          std::cout << "highest w " << highest_weight << std::endl;
-          std::cout << "average w " << weight_sum/num_particles << std::endl;
+          // std::cout << "highest w " << highest_weight << std::endl;
+          // std::cout << "average w " << weight_sum/num_particles << std::endl;
 
           json msgJson;
           msgJson["best_particle_x"] = best_particle.x;
@@ -144,6 +148,7 @@ int main() {
           auto msg = "42[\"best_particle\"," + msgJson.dump() + "]";
           // std::cout << msg << std::endl;
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
+          // usleep(50*1000);
         }  // end "telemetry" if
       } else {
         string msg = "42[\"manual\",{}]";
